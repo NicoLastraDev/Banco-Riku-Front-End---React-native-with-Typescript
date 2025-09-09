@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const RegisterScreen = () => {
-  const [fullName, setFullName] = useState('')
+  const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,7 +24,7 @@ const RegisterScreen = () => {
 
   const onRegister = async () => {
     // CORRECCIÓN: Cambié "confirmPassword" a "!confirmPassword"
-    if (!fullName || !email || !password || !confirmPassword) {
+    if (!nombre || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Todos los campos son obligatorios')
       return
     }
@@ -47,7 +47,7 @@ const RegisterScreen = () => {
     setLoading(true)
 
     try {
-      const wasSuccessful = await register(fullName, email, password)
+      const wasSuccessful = await register(nombre, email, password)
 
       if (wasSuccessful) {
         Alert.alert('Éxito', 'Cuenta creada correctamente', [
@@ -84,8 +84,8 @@ const RegisterScreen = () => {
               className="bg-white p-4 rounded-lg border border-gray-200 w-full"
               placeholder="Cesar Esteban Lastra Vargas"
               autoCapitalize="words"
-              value={fullName}
-              onChangeText={setFullName}
+              value={nombre}
+              onChangeText={setNombre}
             />
           </View>
           

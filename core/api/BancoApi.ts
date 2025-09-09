@@ -3,27 +3,50 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-// DEBUG: Ver todas las variables disponibles
-console.log('Variables de entorno:', Constants.expoConfig?.extra);
+// DEBUG
+console.log('🔧 === INICIANDO BANCO API ===');
 
-const STAGE = Constants.expoConfig?.extra?.EXPO_PUBLIC_STAGE || 'dev';
+const config = Constants.expoConfig?.extra || {};
 
-export const API_URL = 'http://192.168.1.5:4000/api'
-  // STAGE === 'prod' 
-  //   ? Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL
-  //   : Platform.OS === 'ios'
-  //   ? Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL_IOS
-  //   : Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL_ANDROID;
+const STAGE = config.EXPO_PUBLIC_STAGE || 'dev';
+const API_URL = config.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api';
+const API_URL_IOS = config.EXPO_PUBLIC_API_URL_IOS || 'http://192.168.1.6:4000/api';
+const API_URL_ANDROID = config.EXPO_PUBLIC_API_URL_ANDROID || 'http://192.168.1.6:4000/api';
 
-console.log({STAGE, OS: Platform.OS, API_URL});
+console.log('🏷️ STAGE:', STAGE);
+console.log('📡 API_URL:', API_URL);
 
-const bancoApi = axios.create({
-  baseURL: API_URL,
-  timeout: 10000, // ← Agrega timeout
-});
+export const FINAL_API_URL = STAGE === 'prod' 
+  ? API_URL
+  : Platform.OS === 'ios'
+  ? API_URL_IOS
+  : API_URL_ANDROID;
+
+console.log('🎯 URL FINAL:', FINAL_API_URL);
+
+// ✅ Asegúrate de que bancoApi esté definido incluso si hay error
+let bancoApi;
+
+try {
+  bancoApi = axios.create({
+    baseURL: FINAL_API_URL,
+    timeout: 10000,
+  });
+  
+  console.log('✅ Axios instance creada correctamente');
+  
+} catch (error) {
+  console.log('❌ Error creando axios instance:', error);
+  // Fallback a una URL base
+  bancoApi = axios.create({
+    baseURL: 'http://192.168.1.6:4000/api',
+    timeout: 10000,
+  });
+}
 
 // Interceptors
 bancoApi.interceptors.request.use(async (config) => {
+  console.log('🚀 Request a:', config.url);
   const token = await SecureStorageAdapter.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -31,17 +54,16 @@ bancoApi.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Interceptor de respuestas para debug
 bancoApi.interceptors.response.use(
   (response) => {
-    console.log('✅ Response:', response.config.url, response.status);
+    console.log('✅ Response:', response.status);
     return response;
   },
   (error) => {
-    console.log('❌ Error API:', error.config?.url, error.response?.status, error.message);
+    console.log('❌ Error:', error.message);
     return Promise.reject(error);
   }
 );
 
-export { bancoApi };
-
+// ✅ Exportación por defecto
+export default bancoApi;

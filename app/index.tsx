@@ -1,26 +1,41 @@
-import { bancoApi } from '@/core/api/BancoApi';
+import bancoApi from '@/core/api/BancoApi'; // ← Import por defecto
 import { Redirect } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../global.css';
 
-const index = () => {
+const Index = () => {
+  const [isChecking, setIsChecking] = useState(true);
 
-  const testConnection = async () => {
-  try {
-    const response = await bancoApi.get('/');
-    console.log('✅ Conexión exitosa:', response.data);
-    return true;
-  } catch (error: any) {
-    console.log('❌ Error de conexión:', error.message);
-    return false;
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        console.log('🔍 === TESTING CONNECTION ===');
+        
+        // ✅ Verifica que bancoApi no sea undefined
+        if (!bancoApi) {
+          console.log('❌ bancoApi es undefined');
+          return;
+        }
+        
+        console.log('📡 URL base:', bancoApi.defaults.baseURL);
+        
+        const response = await bancoApi.get('/');
+        console.log('✅ CONEXIÓN EXITOSA:', response.data);
+      } catch (error: any) {
+        console.log('❌ FALLA EN CONEXIÓN:', error.message);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    testConnection();
+  }, []);
+
+  if (isChecking) {
+    return null;
   }
+
+  return <Redirect href={'/auth/login'} />;
 }
 
-testConnection()
-
-  return (
-    <Redirect href={'/auth/login'}/>
-  )
-}
-
-export default index
+export default Index;

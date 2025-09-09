@@ -3,11 +3,39 @@ import GoBackIconButton from '@/components/GoBackIconButton';
 import LogoutIconButton from '@/components/LogoutIconButton';
 import { MovimientosRecientes } from '@/components/MovimientosRecientes';
 import { ThemedText } from '@/components/ThemedText';
+import { useAuthStore } from '@/presentation/auth/store/useAuthStore';
 import { Link, router } from 'expo-router';
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 const index = () => {
+
+  const {user, cuenta, status, loadCuenta} = useAuthStore()
+
+  useEffect(() => {
+    if (status === 'authenticated' && user && !cuenta) {
+      loadCuenta()
+    }
+  }, [status, user, cuenta])
+  
+  const formatSaldo = (saldo: number) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(saldo)
+  }
+
+  if(status === 'checking' || !cuenta) {
+      return (
+        <View className="flex-1 justify-center items-center bg-gray-50">
+        <ActivityIndicator size="large" color="#2563eb" />
+        <Text className="text-gray-600 mt-4">Cargando información...</Text>
+      </View>
+      )
+    }
+
   return (
     <ScrollView className="flex-1 bg-gray-50 p-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       {/* Encabezado */}
